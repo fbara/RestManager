@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  RestManager
 //
-//  Created by Gabriel Theodoropoulos.
+//  Created by Frank Bara.
 //  Copyright © 2019 Appcoda. All rights reserved.
 //
 

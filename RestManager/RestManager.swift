@@ -14,6 +14,31 @@ class RestManager {
     var urlQueryParameters = RestEntity()
     var httpBodyParameters = RestEntity()
     
+    // MARK: - Private functions
+    
+    /* Append any URL query parameters specified through the urlQueryParameters property to the original URL.
+    If there are not any parameters, this function will just return the original URL.
+    */
+    private func addURLQueryParameters(toURL url: URL) -> URL {
+       //make sure that there are URL query parameters to append to the query. If not, we just return the input URL.
+        if urlQueryParameters.totalItems() > 0 {
+            //create a URLComponents object that will let us deal with the URL and its parts easily
+            guard var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return url }
+            var queryItems = [URLQueryItem]()
+            for (key, value) in urlQueryParameters.allValues() {
+                let item = URLQueryItem(name: key, value: value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+                queryItems.append(item)
+            }
+            
+            urlComponents.queryItems = queryItems
+            
+            guard let updatedURL = urlComponents.url else { return url }
+            return updatedURL
+        }
+        return url
+    }
+    
+    
     
 }
 

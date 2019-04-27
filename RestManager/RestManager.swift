@@ -80,6 +80,34 @@ class RestManager {
         return request
     }
     
+    /// Make a web request
+    ///
+    /// - Parameters:
+    ///   - url: URL the request will be made TO
+    ///   - httpMethod: preferred HTTP method
+    ///   - completion: result of the request
+    func makeRequest(toURL url: URL, withHTTPMethod httpMethod: HttpMethod, completion: @escaping (_ result: Results) -> Void) {
+        //make the request on a background thread
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            //append any URL query parameters to the given URL
+            let targetURL = self?.addURLQueryParameters(toURL: url)
+            let httpBody = self?.getHTTPBody()
+            
+            guard let request = self?.prepareRequest(withURL: targetURL, httpBody: httpBody, httpMethod: httpMethod) else {
+                completion(Results(withError: CustomError.failedToCreateRequest))
+                return
+            }
+            
+            let sessionConfiguration = URLSessionConfiguration.default
+            let session = URLSession(configuration: sessionConfiguration)
+            let task = session.dataTask(with: request) { (data, response, error) in
+                completion(Results(withData: data, response: Response(fromURLResponse: response), error: error))
+            }
+            
+            task.resume()
+        }
+    }
+    
 }
 
 // MARK: - RestManager Extension

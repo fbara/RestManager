@@ -13,6 +13,7 @@ class RestManager {
     var requestHttpHeaders = RestEntity()
     var urlQueryParameters = RestEntity()
     var httpBodyParameters = RestEntity()
+    var httpBody: Data?
     
     // MARK: - Private functions
     
@@ -38,10 +39,25 @@ class RestManager {
         return url
     }
     
-    
+    private func getHTTPBody() -> Data? {
+        //check if the “Content-Type” request HTTP header has been set through the requestHttpHeaders property.
+        guard let contentType = requestHttpHeaders.value(forKey: "Content-Type") else { return nil }
+        
+        if contentType.contains("application/json") {
+            //values specified in the httpBodyParameters object must be converted into a JSON object (Data object) which in turn will be returned
+            return try? JSONSerialization.data(withJSONObject: httpBodyParameters.allValues(), options: [.prettyPrinted, .sortedKeys])
+        } else if contentType.contains("application/x-www-form-urlencoded") {
+            //build a query string that would look like: "firstname=John&age=40"
+            let bodyString = httpBodyParameters.allValues().map {"\($0)=\(String(describing: $1.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)))" }.joined(separator: "&")
+            return bodyString.data(using: .utf8)
+        } else {
+            return httpBody
+        }
+    }
     
 }
 
+// MARK: - RestManager Extension
 extension RestManager {
     
     enum HttpMethod: String {

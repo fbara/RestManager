@@ -8,6 +8,8 @@
 
 import Foundation
 
+
+
 class RestManager {
     
     var requestHttpHeaders = RestEntity()
@@ -16,6 +18,7 @@ class RestManager {
     var httpBody: Data?
     
     // MARK: - Private functions
+    
     
     /* Append any URL query parameters specified through the urlQueryParameters property to the original URL.
     If there are not any parameters, this function will just return the original URL.
@@ -80,6 +83,8 @@ class RestManager {
         return request
     }
     
+    //MARK: - Public functions
+    
     /// Make a web request
     ///
     /// - Parameters:
@@ -103,6 +108,28 @@ class RestManager {
             let task = session.dataTask(with: request) { (data, response, error) in
                 completion(Results(withData: data, response: Response(fromURLResponse: response), error: error))
             }
+            
+            task.resume()
+        }
+    }
+    
+    
+    /// Get data from a URL
+    ///
+    /// - Parameters:
+    ///   - url: URL where data should be fetched FROM
+    ///   - completion: completion handler which either returns the fetched data on success or nil on failure
+    func getData(fromURL url: URL, completion: @escaping(_ data: Data?) -> Void ) {
+        //make the request on a background thread
+        DispatchQueue.global(qos: .userInitiated).async {
+            let sessionConfiguration = URLSessionConfiguration.default
+            let session = URLSession(configuration: sessionConfiguration)
+            let task = session.dataTask(with: url, completionHandler: { (data, response, error) in
+                //check whether data has been fetched or not, and then
+                //call our completion handler passing either the actual data, or nil
+                guard let data = data else { completion(nil); return }
+                completion(data)
+            })
             
             task.resume()
         }

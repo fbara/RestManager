@@ -39,6 +39,9 @@ class RestManager {
         return url
     }
     
+    /// Generate the data for the content types based on the values specified in the `httpBodyParameters` property.
+    ///
+    /// - Returns: httpBody string
     private func getHTTPBody() -> Data? {
         //check if the “Content-Type” request HTTP header has been set through the requestHttpHeaders property.
         guard let contentType = requestHttpHeaders.value(forKey: "Content-Type") else { return nil }
@@ -53,6 +56,28 @@ class RestManager {
         } else {
             return httpBody
         }
+    }
+    
+    /// Initialize and configure a URLRequest object; the one and only we need to make web requests.
+    ///
+    /// - Parameters:
+    ///   - url: URL that could contain query parameters
+    ///   - httpBody: HTTP body
+    ///   - httpMethod: HTTP method used to make the request
+    /// - Returns: either a URLRequest object, or nil if it cannot be created
+    private func prepareRequest(withURL url: URL?, httpBody: Data?, httpMethod: HttpMethod) -> URLRequest? {
+        //check if the URL is nil or not, and then we’ll initialize a URLRequest object using that URL
+        guard let url = url else { return nil }
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod.rawValue
+        
+        //assign the request HTTP headers to the request object
+        for (header, value) in requestHttpHeaders.allValues() {
+            request.setValue(value, forHTTPHeaderField: header)
+        }
+        
+        request.httpBody = httpBody
+        return request
     }
     
 }
